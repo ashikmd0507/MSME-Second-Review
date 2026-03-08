@@ -1,57 +1,59 @@
-# Smart Speed Control System
+# Smart Speed Control System 
 
-## Overview
-This project simulates an **Intelligent Speed Adaptation (ISA)** system. It demonstrates how a smart vehicle can automatically detect speed limits based on its location and slow down to ensure safety, using **IoT technology** to report data in real-time.
+## 1. Project Overview
+This project implements a simulation of an **Intelligent Speed Adaptation (ISA)** system using Python. It models a vehicle navigating a geofenced environment where speed limits are dynamically enforced based on spatial location. The system integrates **IoT telemetry** via MQTT to broadcast real-time vehicle state, simulating a connected vehicle architecture.
 
-## How It Works (The Logic)
-The system operates on a continuous loop of **See, Think, and Act**:
+## 2. Technical Architecture
 
-1.  **See (GPS & Sensors)**
-    *   The system tracks the car's **(x, y) position** on the map.
-    *   It identifies which **Zone** the car is in (e.g., School Zone, Highway).
-2.  **Think (Control Logic)**
-    *   It compares **Current Speed** vs. **Speed Limit**.
-    *   *Logic*: `If Speed > Limit`, start a timer.
-3.  **Act (Intervention)**
-    *   **Warning Phase (0-3s)**: Flashes red warnings and beeps to alert the driver.
-    *   **Regulation Phase (>3s)**: If warnings are ignored, the system **automatically limits the engine power**, forcing the car to slow down to the limit.
+The application is built upon a real-time simulation loop operating at 60 Hz.
 
-## Project Structure
-Here is a simple breakdown of the code modules:
+| Subsystem | Component | Functionality |
+| :--- | :--- | :--- |
+| **Physics Engine**<br>(`vehicle.py`) | Kinematics | Implements 2D vector physics (`pygame.Vector2`) for position, velocity, and acceleration. |
+| | Dynamics | Simulates friction, braking force, and angular velocity for steering. |
+| | Control | Decouples input handling from frame rate using delta-time (`dt`) calculations. |
+| **Geofencing**<br>(`world.py`) | Zone Detection | Uses Axis-Aligned Bounding Box (AABB) collision detection for real-time zone tracking. |
+| | Mapping | Maps the world into `Zone` objects with metadata (Speed Limit, Name, Color). |
+| **Control Logic**<br>(`speed_controller.py`) | State Machine | Manages vehicle status (`SAFE`, `WARNING`, `OVER_SPEED`) via FSM. |
+| | Hysteresis | Uses warning buffers and time thresholds (0-3s) to prevent state flickering. |
+| | Intervention | Directly modifies `max_speed` to enforce limits during regulation. |
+| **IoT Telemetry**<br>(`mqtt_client.py`) | Async Comm | Runs MQTT client on a daemon thread to avoid blocking the simulation loop. |
+| | Protocol | Uses MQTT v3.1.1 (TCP) to publish JSON telemetry to `broker.hivemq.com`. |
+
+## 3. Module Breakdown
 
 | File | Description |
 | :--- | :--- |
-| `main.py` | **The Manager**. Runs the game loop, handles inputs, and updates the screen. |
-| `vehicle.py` | **The Car**. Handles physics (acceleration, friction, steering) and speed limiting. |
-| `world.py` | **The Map**. Defines roads, zones, and speed limits. |
-| `speed_controller.py` | **The Brain**. Decides if the car is safe, warning, or needs regulation. |
-| `ui.py` | **The Display**. Draws the dashboard, speedometer, and minimap. |
-| `mqtt_client.py` | **The IoT Link**. Sends live vehicle data to the cloud (HiveMQ). |
-| `datalogger.py` | **The Recorder**. Saves trip history to CSV files for analysis. |
+| `main.py` | **Entry Point & Orchestrator**. Manages the main event loop, delta-time calculation, and subsystem coordination. |
+| `vehicle.py` | **Physics Model**. Handles vector math for movement, rotation matrices for steering, and speed clamping. |
+| `world.py` | **Spatial Manager**. Defines the coordinate system and manages the list of `Zone` entities. |
+| `speed_controller.py` | **Logic Core**. Pure logic class implementing the ISA rules and timing mechanisms. |
+| `ui.py` | **Renderer**. Handles blitting of HUD elements, text rendering, and coordinate transformation for the minimap. |
+| `mqtt_client.py` | **Network Interface**. Wraps the `paho-mqtt` library for threaded publish/subscribe operations. |
+| `datalogger.py` | **Persistence Layer**. Writes structured CSV data for post-simulation analysis. |
 
-## Key Features
-*   **Real Physics**: Acceleration, braking, and drifting mechanics using vector math.
-*   **Zone Detection**: Automatically detects 4 types of zones (Highway, City, School, Village).
-*   **Smart Braking**: Smoothly slows the car down if the driver ignores warnings.
-*   **IoT Connectivity**: Publishes live telemetry (Speed, Location, Status) to an MQTT broker.
-*   **Data Logging**: Saves all trip details locally.
+## 4. Key Features
 
-## Controls
-*   **Arrow Keys**: Drive (Accelerate, Brake, Turn).
-*   **O**: Toggle **Override Mode** (Emergency bypass of speed limiter).
-*   **R**: Reset car position.
-*   **F**: Toggle Fullscreen.
+| Feature | Description |
+| :--- | :--- |
+| **Vector-Based Movement** | Realistic acceleration and drift mechanics. |
+| **Dynamic Speed Limiting** | Real-time modification of vehicle constraints based on geospatial data. |
+| **Event-Driven Logging** | Captures state transitions (e.g., Regulation Activation) with timestamps. |
+| **Remote Monitoring** | Live data stream via MQTT topic `vehicle/telemetry`. |
 
-## How to Run
-1.  **Install Dependencies**:
-    ```bash
-    pip install pygame paho-mqtt
-    ```
-2.  **Run the Simulation**:
-    ```bash
-    python main.py
-    ```
-3.  **Follow On-Screen Prompts**: Enter driver name and destination to start.
+## 5. Controls & Configuration
+
+| Category | Details |
+| :--- | :--- |
+| **Input Controls** | Arrow Keys (Movement), `O` (Override), `R` (Reset), `F` (Fullscreen). |
+| **Configuration** | Constants for physics, network, and display centralized in `config.py`. |
+
+## 6. Execution
+
+| Step | Action | Command |
+| :--- | :--- | :--- |
+| **1. Dependencies** | Install required libraries | `pip install pygame paho-mqtt numpy` |
+| **2. Launch** | Run the simulation | `python main.py` |
 
 ---
-*Built with Python, Pygame, and Paho-MQTT.*
+*Tech Stack: Python 3, Pygame (SDL Wrapper), Paho-MQTT, NumPy.*
