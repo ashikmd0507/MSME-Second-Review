@@ -11,7 +11,7 @@ from config import *
 from vehicle import Vehicle
 from world import World
 from ui import UI
-from speed_controller import SpeedController, OVER_SPEED
+from speed_controller import SpeedController, OVER_SPEED, WARNING_1, WARNING_2
 from mqtt_client import MQTTClient
 from datalogger import DataLogger
 from audio import generate_beep_sound
@@ -36,6 +36,7 @@ class Game:
         self.speed_controller = SpeedController(OVERSPEED_DURATION_LIMIT)
         self.logger = DataLogger()
         self.beep_sound = generate_beep_sound()
+        self.last_beep_time = 0
         
         # Init MQTT Client
         self.mqtt_client = MQTTClient()
@@ -127,12 +128,19 @@ class Game:
             self._publish_telemetry(zone_name, speed_limit)
             self.last_mqtt_publish_time = time.time()
 
+        # Audio feedback for warnings
+        if self.speed_status in [WARNING_1, WARNING_2] and not self.is_override_mode:
+             # Beep frequency increases with urgency (0.8s for Warning 1, 0.4s for Warning 2)
+             interval = 0.8 if self.speed_status == WARNING_1 else 0.4
+             if time.time() - self.last_beep_time > interval:
+                 self.beep_sound.play()
+                 self.last_beep_time = time.time()
+
     def _log_data(self, zone_name, speed_limit):
         is_overspeeding = self.speed_status == OVER_SPEED
         if is_overspeeding and not self.was_overspeeding:
             details = "Caught by speed camera" if self.in_camera_zone else ""
             self.logger.log_event("OVER_SPEED_WARNING", self.player.get_speed_kph(), speed_limit, zone_name, details)
-            self.beep_sound.play() # Play audio alert
         
         if self.is_regulating and not self.was_regulating:
             self.logger.log_event("REGULATION_ACTIVATED", self.player.get_speed_kph(), speed_limit, zone_name)

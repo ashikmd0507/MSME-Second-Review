@@ -12,7 +12,7 @@ TITLE = "Smart Speed Control Simulation"
 
 # World dimensions
 WORLD_WIDTH = SCREEN_WIDTH
-WORLD_HEIGHT = SCREEN_HEIGHT * 4 # Make the world 4 screens tall
+WORLD_HEIGHT = SCREEN_HEIGHT * 40 # Make the world 40 screens tall
 
 # Colors
 BLACK = (0, 0, 0)
@@ -56,7 +56,7 @@ SPEED_CAMERA_COLOR = (255, 0, 255, 100) # Magenta with some transparency
 
 # Speed Control Settings
 WARNING_BUFFER = 5  # Show 'Approaching Limit' if within 5 km/h of the speed limit
-OVERSPEED_DURATION_LIMIT = 3  # seconds before auto-regulation kicks in
+OVERSPEED_DURATION_LIMIT = 4  # seconds before auto-regulation kicks in (allows for 2 warnings)
 DEFAULT_MAX_SPEED_KPH = 120 # The vehicle's unrestricted top speed
 
 # MQTT Settings

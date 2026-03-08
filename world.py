@@ -41,7 +41,7 @@ class World:
         self.road_rect = pygame.Rect((WORLD_WIDTH - road_width) / 2, 0, road_width, WORLD_HEIGHT)
 
         # Define zone segments along the long road
-        zone_height = WORLD_HEIGHT / 6
+        zone_height = WORLD_HEIGHT / 4
         highway_rect = pygame.Rect(self.road_rect.left, 0, road_width, zone_height)
         city_rect = pygame.Rect(self.road_rect.left, zone_height, road_width, zone_height)
         school_rect = pygame.Rect(self.road_rect.left, zone_height * 2, road_width, zone_height)

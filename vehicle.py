@@ -12,7 +12,7 @@ class Vehicle(pygame.sprite.Sprite):
     # This constant converts a speed in km/h to the number of pixels to move per frame.
     # A lower value makes the car appear slower on screen for the same kph value.
     # (km/h -> m/h -> pixels/h -> pixels/s -> pixels/frame)
-    KPH_TO_PIXEL_PER_FRAME = (1000 * 35 / 3600) / FPS 
+    KPH_TO_PIXEL_PER_FRAME = (1000 * 15 / 3600) / FPS 
 
     def __init__(self, x, y, max_speed_kph=DEFAULT_MAX_SPEED_KPH):
         """
@@ -43,6 +43,7 @@ class Vehicle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(x, y))
         
         # Physics state
+        self.start_position = pygame.Vector2(x, y)
         self.position = pygame.Vector2(x, y)
         self.velocity = pygame.Vector2(0, 0) # This vector is used for final movement on screen
         self.angle = 0
@@ -55,6 +56,10 @@ class Vehicle(pygame.sprite.Sprite):
         self.brake_power_rate = 25.0            # Slower braking
         self.friction_rate = 4.0                # Lower friction
         self.turn_speed = 0.8                   # Slower turning
+        
+        # UI Elements
+        self.reset_btn_rect = pygame.Rect(SCREEN_WIDTH - 120, 20, 100, 40)
+        self.ui_font = pygame.font.SysFont("Arial", 20, bold=True)
 
     def handle_input(self, dt):
         """
@@ -62,6 +67,16 @@ class Vehicle(pygame.sprite.Sprite):
         Delta time (dt) is used to make movement frame-rate independent.
         """
         keys = pygame.key.get_pressed()
+        
+        # Check for mouse click on Reset Button
+        mouse_pos = pygame.mouse.get_pos()
+        if pygame.mouse.get_pressed()[0] and self.reset_btn_rect.collidepoint(mouse_pos):
+            self.reset()
+            return
+
+        if keys[pygame.K_r]:
+            self.reset()
+            return
         
         # Acceleration and Braking
         if keys[pygame.K_UP]:
@@ -82,8 +97,10 @@ class Vehicle(pygame.sprite.Sprite):
         """
         Increases the vehicle's speed, respecting the max speed limit.
         """
-        self.speed_kph += self.acceleration_rate * dt
-        self.speed_kph = min(self.speed_kph, self.max_speed_kph)
+        # Only accelerate if we are below the limit. If we are over (due to regulation), don't snap down.
+        if self.speed_kph < self.max_speed_kph:
+            self.speed_kph += self.acceleration_rate * dt
+            self.speed_kph = min(self.speed_kph, self.max_speed_kph)
 
     def brake_and_reverse(self, dt):
         """
@@ -117,11 +134,28 @@ class Vehicle(pygame.sprite.Sprite):
         self.angle += turn_rate * turn_direction
         self.angle %= 360 # Keep angle between 0 and 360
 
+    def reset(self):
+        """
+        Resets the vehicle to its starting position and state.
+        """
+        self.position = pygame.Vector2(self.start_position)
+        self.velocity = pygame.Vector2(0, 0)
+        self.angle = 0
+        self.speed_kph = 0.0
+        self.image = self.original_image
+        self.rect = self.image.get_rect(center=self.position)
+
     def update(self, dt):
         """
         Updates the vehicle's position and rotation based on its current speed and angle.
         :param dt: Delta time (time since last frame).
         """
+        # Smoothly reduce speed if over the limit (Step-by-step reduction)
+        if self.speed_kph > self.max_speed_kph:
+            self.speed_kph -= self.brake_power_rate * dt * 0.3 # Gentle braking for regulation
+            if self.speed_kph < self.max_speed_kph:
+                self.speed_kph = self.max_speed_kph
+
         # 1. Convert the abstract speed (km/h) into a 2D velocity vector for the screen.
         pixel_speed_per_frame = self.speed_kph * self.KPH_TO_PIXEL_PER_FRAME
         # `from_polar` creates a vector from an angle and length.
@@ -158,6 +192,15 @@ class Vehicle(pygame.sprite.Sprite):
         Draws the vehicle on the screen.
         """
         screen.blit(self.image, self.rect)
+        
+        # Draw Reset Button
+        # Change color on hover
+        btn_color = (200, 50, 50) if self.reset_btn_rect.collidepoint(pygame.mouse.get_pos()) else (150, 0, 0)
+        pygame.draw.rect(screen, btn_color, self.reset_btn_rect, border_radius=5)
+        pygame.draw.rect(screen, WHITE, self.reset_btn_rect, 2, border_radius=5) # Border
+        text_surf = self.ui_font.render("RESET", True, WHITE)
+        text_rect = text_surf.get_rect(center=self.reset_btn_rect.center)
+        screen.blit(text_surf, text_rect)
 
     def get_speed_kph(self):
         """
@@ -170,5 +213,4 @@ class Vehicle(pygame.sprite.Sprite):
         Sets a new maximum speed limit for the vehicle, often enforced by the speed controller.
         """
         self.max_speed_kph = new_limit
-        # Also clamp the current speed to the new limit if we are now over it.
-        self.speed_kph = min(self.speed_kph, self.max_speed_kph)
+        # We do NOT clamp instantly here anymore, to allow for smooth "step-by-step" reduction in update().

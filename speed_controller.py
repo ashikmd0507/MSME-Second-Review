@@ -9,6 +9,8 @@ import time
 SAFE = "Safe"
 APPROACHING_LIMIT = "Approaching Limit"
 OVER_SPEED = "Over Speed"
+WARNING_1 = "First Warning"
+WARNING_2 = "Second Warning"
 
 class SpeedController:
     def __init__(self, regulation_time_limit):
@@ -55,9 +57,16 @@ class SpeedController:
                     # Start the overspeed timer
                     self.overspeed_start_time = time.time()
                 
+                elapsed = time.time() - self.overspeed_start_time
+                step = self.regulation_time_limit / 2.0
+                
                 # Check if regulation should be activated
-                if (time.time() - self.overspeed_start_time) > self.regulation_time_limit:
+                if elapsed > self.regulation_time_limit:
                     self.is_regulating = True
+                elif elapsed > step:
+                    status = WARNING_2
+                else:
+                    status = WARNING_1
         else:
             # Reset timer and regulation if not overspeeding
             self.overspeed_start_time = None

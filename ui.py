@@ -6,7 +6,7 @@ Handles the drawing of the dashboard, warnings, and other on-screen information.
 
 import pygame
 from config import *
-from speed_controller import SAFE, APPROACHING_LIMIT, OVER_SPEED
+from speed_controller import SAFE, APPROACHING_LIMIT, OVER_SPEED, WARNING_1, WARNING_2
 
 class UI:
     def __init__(self):
@@ -57,7 +57,7 @@ class UI:
         status_color = GREEN
         if speed_status == APPROACHING_LIMIT:
             status_color = YELLOW
-        elif speed_status == OVER_SPEED:
+        elif speed_status in [OVER_SPEED, WARNING_1, WARNING_2]:
             status_color = RED
         
         if is_override_mode:
@@ -82,9 +82,13 @@ class UI:
             if in_camera_zone and speed_status == OVER_SPEED:
                  self.draw_notification(screen, "SPEED CAMERA! Slow Down Immediately!", RED, blink=True)
             elif is_regulating:
-                self.draw_notification(screen, "Automatic Speed Regulation Activated!", RED)
+                self.draw_notification(screen, "Reducing Speed Step-by-Step...", RED)
             elif speed_status == OVER_SPEED:
                 self.draw_notification(screen, "WARNING: Exceeding Speed Limit!", RED, blink=True)
+            elif speed_status == WARNING_1:
+                self.draw_notification(screen, "1st Warning: Slow Down!", RED, blink=True)
+            elif speed_status == WARNING_2:
+                self.draw_notification(screen, "2nd Warning: Risk of Regulation!", RED, blink=True)
 
     def draw_controls_guide(self, screen):
         """
