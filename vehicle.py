@@ -89,9 +89,9 @@ class Vehicle(pygame.sprite.Sprite):
         # Turning is allowed when moving, forwards or backwards
         if abs(self.speed_kph) > 1:
             if keys[pygame.K_LEFT]:
-                self.turn(-1)
-            if keys[pygame.K_RIGHT]:
                 self.turn(1)
+            if keys[pygame.K_RIGHT]:
+                self.turn(-1)
 
     def accelerate(self, dt):
         """
@@ -140,7 +140,7 @@ class Vehicle(pygame.sprite.Sprite):
         """
         self.position = pygame.Vector2(self.start_position)
         self.velocity = pygame.Vector2(0, 0)
-        self.angle = 0
+        self.angle = 180
         self.speed_kph = 0.0
         self.image = self.original_image
         self.rect = self.image.get_rect(center=self.position)
@@ -152,7 +152,7 @@ class Vehicle(pygame.sprite.Sprite):
         """
         # Smoothly reduce speed if over the limit (Step-by-step reduction)
         if self.speed_kph > self.max_speed_kph:
-            self.speed_kph -= self.brake_power_rate * dt * 0.3 # Gentle braking for regulation
+            self.speed_kph -= self.brake_power_rate * dt # Strict braking for regulation
             if self.speed_kph < self.max_speed_kph:
                 self.speed_kph = self.max_speed_kph
 

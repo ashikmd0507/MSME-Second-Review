@@ -21,20 +21,32 @@ class Game:
         """
         Initializes the game, Pygame, and sets up the screen.
         """
+        # Get User Input for Trip
+        print("--- TRIP CONFIGURATION ---")
+        self.driver_name = input("[1] Enter Driver Name: ")
+        self.source = input("[2] Enter Starting Location: ")
+        self.destination = input("[3] Enter Destination: ")
+        self.trip_start_time = time.strftime("%d-%m-%Y ( %I:%M:%S %p )")
+
         pygame.mixer.pre_init(44100, -16, 2, 512) # Setup mixer
         pygame.init()
         
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SCALED | pygame.RESIZABLE)
         pygame.display.set_caption(TITLE)
         self.clock = pygame.time.Clock()
         self.running = True
         
         # Create game objects and sound
         self.world = World()
-        self.player = Vehicle(self.world.road_rect.centerx, 150)
+        self.player = Vehicle(self.world.road_rect.centerx, WORLD_HEIGHT - 150)
+        self.player.angle = 180 # Start facing up
         self.ui = UI()
         self.speed_controller = SpeedController(OVERSPEED_DURATION_LIMIT)
         self.logger = DataLogger()
+        
+        # Log the trip configuration
+        self.logger.log_event("TRIP_STARTED", 0, 0, "N/A", f"Driver: {self.driver_name}, Route: {self.source} -> {self.destination}")
+
         self.beep_sound = generate_beep_sound()
         self.last_beep_time = 0
         
@@ -58,6 +70,8 @@ class Game:
         self.last_history_log_time = 0
         self.was_overspeeding = False
         self.was_regulating = False
+        self.last_zone = None
+        self.enforce_limit = False
 
     def run(self):
         """
@@ -82,6 +96,8 @@ class Game:
                 if event.key == pygame.K_o:
                     self.is_override_mode = not self.is_override_mode
                     self.logger.log_event("OVERRIDE_TOGGLED", self.player.get_speed_kph(), 0, "N/A", f"Override set to {self.is_override_mode}")
+                if event.key == pygame.K_f:
+                    pygame.display.toggle_fullscreen()
 
         self.player.handle_input(self.dt)
 
@@ -100,6 +116,11 @@ class Game:
             self.camera.y = WORLD_HEIGHT - SCREEN_HEIGHT
 
         self.current_zone = self.world.get_zone_at(self.player.position)
+        
+        if self.current_zone != self.last_zone:
+            self.enforce_limit = False
+            self.last_zone = self.current_zone
+
         self.in_camera_zone = self.world.is_in_speed_camera_zone(self.player.rect)
 
         speed_limit = DEFAULT_MAX_SPEED_KPH
@@ -116,8 +137,12 @@ class Game:
         if self.is_override_mode:
             self.is_regulating = False
             self.speed_controller.is_regulating = False
+            self.enforce_limit = False
 
         if self.is_regulating:
+            self.enforce_limit = True
+
+        if self.enforce_limit:
             self.player.set_max_speed_kph(speed_limit)
         else:
             self.player.set_max_speed_kph(DEFAULT_MAX_SPEED_KPH)
@@ -186,6 +211,8 @@ class Game:
         # UI elements are drawn without the camera offset, so they stay fixed
         self.ui.draw_dashboard(self.screen, self.player, self.current_zone, self.speed_status, self.is_regulating, self.in_camera_zone, self.is_override_mode)
         self.ui.draw_controls_guide(self.screen)
+        self.ui.draw_minimap(self.screen, self.player, self.world)
+        self.ui.draw_trip_info(self.screen, self.driver_name, self.source, self.destination, self.trip_start_time)
         
         pygame.display.flip()
 
