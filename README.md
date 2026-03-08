@@ -18,13 +18,13 @@ The application is built upon a real-time simulation loop operating at 60 Hz.
 
 | File | Description |
 | :--- | :--- |
-| `main.py` | **Entry Point & Orchestrator**. Manages the main event loop, delta-time calculation, and subsystem coordination. |
-| `vehicle.py` | **Physics Model**. Handles vector math for movement, rotation matrices for steering, and speed clamping. |
-| `world.py` | **Spatial Manager**. Defines the coordinate system and manages the list of `Zone` entities. |
-| `speed_controller.py` | **Logic Core**. Pure logic class implementing the ISA rules and timing mechanisms. |
-| `ui.py` | **Renderer**. Handles blitting of HUD elements, text rendering, and coordinate transformation for the minimap. |
-| `mqtt_client.py` | **Network Interface**. Wraps the `paho-mqtt` library for threaded publish/subscribe operations. |
-| `datalogger.py` | **Persistence Layer**. Writes structured CSV data for post-simulation analysis. |
+| `main.py` | **Entry Point & Orchestrator**: Manages the main event loop, delta-time calculation, and subsystem coordination. |
+| `vehicle.py` | **Physics Model**: Handles vector math for movement, rotation matrices for steering, and speed clamping. |
+| `world.py` | **Spatial Manager**: Defines the coordinate system and manages the list of `Zone` entities. |
+| `speed_controller.py` | **Logic Core**: Pure logic class implementing the ISA rules and timing mechanisms. |
+| `ui.py` | **Renderer**: Handles blitting of HUD elements, text rendering, and coordinate transformation for the minimap. |
+| `mqtt_client.py` | **Network Interface**: Wraps the `paho-mqtt` library for threaded publish/subscribe operations. |
+| `datalogger.py` | **Persistence Layer**: Writes structured CSV data for post-simulation analysis. |
 
 ## 4. Key Features
 
@@ -49,5 +49,4 @@ The application is built upon a real-time simulation loop operating at 60 Hz.
 | **1. Dependencies** | Install required libraries | `pip install pygame paho-mqtt numpy geopy` or `pip install -r requirements.txt` |
 | **2. Launch** | Run the simulation | `python main.py` |
 
----
 *Tech Stack: Python 3, Pygame (SDL Wrapper), Paho-MQTT, NumPy.*
