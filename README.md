@@ -1,4 +1,12 @@
-# Smart Speed Control and Warning System in Vehicles using GPS-based dynamic speed regulation 
+# Smart Speed Control and Warning System in Vehicles using IoT & GPS-based Dynamic Speed Regulation 
+
+| S.No | Team Member Name   |
+| ---: | ------------------ |
+|    1 | Ashik Mohamed S    |
+|    2 | Akash A            |
+|   3  | Jayasuriya S       |
+|    4 | Mohamed Imthiyas H |
+
 
 ## 1. Project Overview
 This project implements a simulation of an **Intelligent Speed Adaptation (ISA)** system using Python. It models a vehicle navigating a geofenced environment where speed limits are dynamically enforced based on spatial location. The system integrates IoT telemetry via MQTT to broadcast real-time vehicle state, simulating a connected vehicle architecture.
