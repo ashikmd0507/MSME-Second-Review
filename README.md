@@ -12,7 +12,7 @@ The simulation places you in control of a visually distinct car on a 2D map desi
 - **Speed Monitoring**: Your vehicle's real-time speed is constantly monitored. The physics have been tuned for a more controllable driving experience.
 - **Warning Stage**: If you exceed the speed limit of your current zone, the system will issue a visual (flashing on-screen banner) and audible (beep) warning. The dashboard speed indicator will also turn red.
 - **Automatic Regulation Stage**: If you ignore the warnings and continue to overspeed for more than 3 seconds, the system automatically activates its speed regulation protocol. It smoothly reduces your vehicle's maximum speed to the zone's limit, preventing you from accelerating further.
-- **IoT Simulation**: All vehicle data—location, speed, zone, and system status—is serialized into a JSON format and published to a public MQTT broker every second, simulating how a real-world IoT device would transmit telemetry data.
+- **IoT Simulation**: All vehicle data location, speed, zone, and system status is serialized into a JSON format and published to a public MQTT broker every second, simulating how a real-world IoT device would transmit telemetry data.
 
 ## 3. Core Features
 
